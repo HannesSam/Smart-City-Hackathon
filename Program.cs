@@ -19,7 +19,10 @@ namespace DotNet
         {
 
             //var hej = GameLayer.GetGames();
-            //GameLayer.EndGame("a372d4bf-6665-4069-8040-a59d81e9817a");
+            //GameLayer.EndGame("5a512a1d-96fb-4ae2-ba2e-e2968f14f9e8");
+            //GameLayer.EndGame("dc3b2bba-8b70-4724-bdfb-349b40da4d5c");
+            //GameLayer.EndGame("1a300ac5-c834-4582-8e4b-224af2a9d521");
+            //GameLayer.EndGame("caea16a3-5d0c-41e3-9828-95d87cc95189");
             //log för att logga info om score över olika körningar och de olika parametrar som då fanns.
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()

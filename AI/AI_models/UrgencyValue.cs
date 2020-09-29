@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DotNet.AI.AI_models
 {
-    public enum GameTask { StartBuild, Build, Repair, ChangeTemperature, Wait }
+    public enum GameTask { StartBuild, Build, BuildUtility, Repair, ChangeTemperature, Wait }
 
     class UrgencyValue
     {

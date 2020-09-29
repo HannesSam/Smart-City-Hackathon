@@ -32,7 +32,7 @@ namespace DotNet.AI.AI_models
             TypeOfHouse = 1;
             BuildingMaxTemp = 24;
             BuildingMinTemp = 18;
-            TempAdjustValue = 0.5;
+            TempAdjustValue = 1.8;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace DotNet.AI
     {
         private readonly GameLayer GameLayer;
         private List<BuildableTile> ListOfBuildPositions;
+        private List<BuildableTile> Temp;
         private List<BuildableTile> BuildingsUnderConstr;
         private List<BuildableTile> ConstructedBuildings;
 
@@ -20,6 +21,7 @@ namespace DotNet.AI
         {
             GameLayer = GL;
             ListOfBuildPositions = new List<BuildableTile>();
+            Temp = new List<BuildableTile>();
             ConstructedBuildings = new List<BuildableTile>();
         }
 
@@ -76,6 +78,7 @@ namespace DotNet.AI
                     }
                 }
             }
+            ListOfBuildPositions = ListOfBuildPositions.OrderByDescending(x => x.Value).ToList();
         }
 
         public void Take_turn(string gameId, ConfigValues config)
@@ -107,6 +110,9 @@ namespace DotNet.AI
             urgencyValues.Add(StartBuildTask);
             UrgencyValue BuildTask = new UrgencyValue(buildValue, GameTask.Build);
             urgencyValues.Add(BuildTask);
+            //implementera start värde
+            UrgencyValue UtilityTask = new UrgencyValue(0, GameTask.BuildUtility);
+            urgencyValues.Add(UtilityTask);
             UrgencyValue RepairTask = new UrgencyValue(repairValue, GameTask.Repair);
             urgencyValues.Add(RepairTask);
             UrgencyValue TemperatureTask = new UrgencyValue(temperatureValue, GameTask.ChangeTemperature);
@@ -124,6 +130,11 @@ namespace DotNet.AI
             else if(state.Funds > config.FundsLevelBuildHouse && state.HousingQueue > config.HousingQueue)
             {
                 StartBuildTask.Value = 40;
+            }
+            //Utility buildings
+            if(state.UtilityBuildings.Count < 3 && state.Funds > 20000)
+            {
+                UtilityTask.Value = 30;
             }
 
             //Build building
@@ -143,6 +154,15 @@ namespace DotNet.AI
                 if (building.Temperature < config.BuildingMinTemp || building.Temperature > config.BuildingMaxTemp)
                 {
                     TemperatureTask.Value = 60;
+                }
+            }
+            //same for utility buildoings
+            for (int i = 0; i < state.UtilityBuildings.Count; i++)
+            {
+                var building = state.UtilityBuildings[i];
+                if (building.BuildProgress < 100 )
+                {
+                    BuildTask.Value = 80;
                 }
             }
 
@@ -178,6 +198,21 @@ namespace DotNet.AI
                             break;
                         }
                     }
+                    for (int i = 0; i < state.UtilityBuildings.Count; i++)
+                    {
+                        var buildSpot = state.UtilityBuildings[i];
+                        if (buildSpot.BuildProgress < 100)
+                        {
+                            GameLayer.Build(buildSpot.Position, gameId);
+                            break;
+                        }
+                    }
+                    break;
+                case GameTask.BuildUtility:
+                        var utilityBuilding = ListOfBuildPositions[0];
+                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[2].BuildingName,
+        gameId);
+                    ListOfBuildPositions.RemoveAt(0);
                     break;
                 case GameTask.Repair:
                     for (int i = 0; i < state.ResidenceBuildings.Count; i++)
