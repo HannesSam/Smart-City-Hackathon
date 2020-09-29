@@ -16,6 +16,9 @@ namespace DotNet
 
         public static void Main(string[] args)
         {
+
+            var hej = GameLayer.GetGames();
+            //GameLayer.EndGame("687b0d01-da3d-40b6-a780-7534ca9f9729");
             //log för att logga info om score över olika körningar och de olika parametrar som då fanns.
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -26,15 +29,16 @@ namespace DotNet
             Log.Information("Hello, world!");
 
             //för att testa en ai ändra värdet här och i loopen
-            AI_nr1 AI = new AI_nr1(GameLayer);
+            AI_nr2 AI = new AI_nr2(GameLayer);
 
             var gameId = GameLayer.NewGame(Map);
             Log.Information($"Starting game: {GameLayer.GetState().GameId}");
             GameLayer.StartGame(gameId);
+            AI.ConfigureMap();
 
             while (GameLayer.GetState().Turn < GameLayer.GetState().MaxTurns)
             {
-                AI.take_turn(gameId);
+                AI.Take_turn(gameId);
             }
             Log.Information($"Done with game: {GameLayer.GetState().GameId}");
             Log.Information(GameLayer.GetScore(gameId).FinalScore.ToString());

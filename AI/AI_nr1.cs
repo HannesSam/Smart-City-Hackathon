@@ -19,7 +19,6 @@ namespace DotNet.AI
 
         public void take_turn(string gameId)
         {
-
             //Vi skapar "Urgency values" som alltid ska refleketera hur viktigt något är att göra denna tur.
             //Dessa använder vi sen för att väljav vilken handling vi tar. 
 
