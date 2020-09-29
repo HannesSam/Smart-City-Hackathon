@@ -78,7 +78,7 @@ namespace DotNet.AI
             //Evaluate neccissity of every task
 
             //start build
-            if (state.ResidenceBuildings.Count < 5)
+            if (state.ResidenceBuildings.Count < 8)
             {
                 StartBuildTask.Value = 70;
             }
@@ -151,11 +151,11 @@ namespace DotNet.AI
                     for (int i = 0; i < state.ResidenceBuildings.Count; i++)
                     {
                         var changeTemperatureSpot = state.ResidenceBuildings[i];
-                        if (changeTemperatureSpot.Temperature < 18)
+                        if (changeTemperatureSpot.Temperature < 17)
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 + 0.5 - changeTemperatureSpot.CurrentPop * 0.04;
+                                * bluePrint.Emissivity / 1 + 1.5 - changeTemperatureSpot.CurrentPop * 0.04;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
@@ -163,8 +163,9 @@ namespace DotNet.AI
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 - 0.5 - changeTemperatureSpot.CurrentPop * 0.04;
+                                * bluePrint.Emissivity / 1 - 1.5 - changeTemperatureSpot.CurrentPop * 0.04;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
+                            break;
                         }
                     }
                     break;
