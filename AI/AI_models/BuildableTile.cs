@@ -8,12 +8,13 @@ namespace DotNet.models
     {
         public int XSpot { get; set; }
         public int YSpot { get; set; }
+        public int Value { get; set; }
 
-
-        public BuildableTile(int xSpot, int ySpot)
+        public BuildableTile(int xSpot, int ySpot, int value)
         {
             XSpot = xSpot;
             YSpot = ySpot;
+            Value = value;
         }
     }
 

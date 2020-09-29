@@ -32,14 +32,53 @@ namespace DotNet.AI
                 {
                     if (state.Map[i][j] == 0)
                     {
-                        BuildableTile tile = new BuildableTile(i, j);
+                        int value = 1;
+
+                        //Checks to see if the six squares around it are buildable land or not. Then raises that tiles score by one. 
+                        if (CheckTile(state.Map, i - 1, j -1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i +1 , j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j + 1))
+                        {
+                            value++;
+                        }
+
+
+                        BuildableTile tile = new BuildableTile(i, j, value);
+
+
                         ListOfBuildPositions.Add(tile);
                     }
                 }
             }
         }
 
-        public void Take_turn(string gameId)
+        public void Take_turn(string gameId, ConfigValues config)
         {
 
             //Vi skapar "Urgency values" som alltid ska refleketera hur viktigt något är att göra denna tur.
@@ -56,11 +95,11 @@ namespace DotNet.AI
             var state = GameLayer.GetState();
 
             //Urgency values
-            int startBuildValue = 0;
-            int buildValue = 0;
-            int repairValue = 0;
-            int temperatureValue = 0;
-            int waitValue = 10;
+            int startBuildValue = config.StartBuildValue;
+            int buildValue = config.BuildValue;
+            int repairValue = config.RepairValue;
+            int temperatureValue = config.TemperatureValue;
+            int waitValue = config.WaitValue;
 
             List<UrgencyValue> urgencyValues = new List<UrgencyValue>();
 
@@ -78,9 +117,13 @@ namespace DotNet.AI
             //Evaluate neccissity of every task
 
             //start build
-            if (state.ResidenceBuildings.Count < 8)
+            if (state.ResidenceBuildings.Count < config.NumberOfResidenceBuildings)
             {
                 StartBuildTask.Value = 70;
+            }
+            else if(state.Funds > config.FundsLevelBuildHouse && state.HousingQueue > config.HousingQueue)
+            {
+                StartBuildTask.Value = 40;
             }
 
             //Build building
@@ -95,11 +138,11 @@ namespace DotNet.AI
                 }
                 if (building.Health < 50)
                 {
-                    RepairTask.Value = 50;
+                    RepairTask.Value = 70;
                 }
-                if (building.Temperature < 17 || building.Temperature > 24)
+                if (building.Temperature < config.BuildingMinTemp || building.Temperature > config.BuildingMaxTemp)
                 {
-                    TemperatureTask.Value = 90;
+                    TemperatureTask.Value = 60;
                 }
             }
 
@@ -119,11 +162,11 @@ namespace DotNet.AI
             {
                 case GameTask.StartBuild:
                     var building = ListOfBuildPositions[0];
-                    GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[0].BuildingName,
+                    GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[config.TypeOfHouse].BuildingName,
         gameId);
                     ListOfBuildPositions.RemoveAt(0);
-                    BuildableTile build = new BuildableTile(building.XSpot, building.YSpot);
-                    ConstructedBuildings.Add(build);
+                    //BuildableTile build = new BuildableTile(building.XSpot, building.YSpot);
+                    //ConstructedBuildings.Add(build);
                     break;
                 case GameTask.Build:
                     for (int i = 0; i < state.ResidenceBuildings.Count; i++)
@@ -151,19 +194,19 @@ namespace DotNet.AI
                     for (int i = 0; i < state.ResidenceBuildings.Count; i++)
                     {
                         var changeTemperatureSpot = state.ResidenceBuildings[i];
-                        if (changeTemperatureSpot.Temperature < 17)
+                        if (changeTemperatureSpot.Temperature < config.BuildingMinTemp)
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 + 1.5 - changeTemperatureSpot.CurrentPop * 0.04;
+                                * bluePrint.Emissivity / 1 + config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
-                        else if (changeTemperatureSpot.Temperature > 24)
+                        else if (changeTemperatureSpot.Temperature > config.BuildingMaxTemp)
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 - 1.5 - changeTemperatureSpot.CurrentPop * 0.04;
+                                * bluePrint.Emissivity / 1 - config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
@@ -186,6 +229,22 @@ namespace DotNet.AI
                 Log.Information("Error: " + error);
             }
 
+        }
+
+        private bool CheckTile(int[][] map, int x, int y)
+        {
+            try
+            {
+                if (map[x][y] == 0)
+                {
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return false;
         }
     }
 }

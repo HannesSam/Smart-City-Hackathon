@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using DotNet.AI;
+using DotNet.AI.AI_models;
 using DotNet.models;
 using Serilog;
 
@@ -17,8 +18,8 @@ namespace DotNet
         public static void Main(string[] args)
         {
 
-            var hej = GameLayer.GetGames();
-            //GameLayer.EndGame("687b0d01-da3d-40b6-a780-7534ca9f9729");
+            //var hej = GameLayer.GetGames();
+            //GameLayer.EndGame("a372d4bf-6665-4069-8040-a59d81e9817a");
             //log för att logga info om score över olika körningar och de olika parametrar som då fanns.
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
@@ -35,14 +36,24 @@ namespace DotNet
             Log.Information($"Starting game: {GameLayer.GetState().GameId}");
             GameLayer.StartGame(gameId);
             AI.ConfigureMap();
+            ConfigValues config = new ConfigValues();
 
             while (GameLayer.GetState().Turn < GameLayer.GetState().MaxTurns)
             {
-                AI.Take_turn(gameId);
+                AI.Take_turn(gameId, config);
+
             }
+            Log.Information($"Final money: {GameLayer.GetState().Funds}");
+            Log.Information($"Final pop: {GameLayer.GetScore(gameId).FinalPopulation}");
+            Log.Information($"Final happines: {GameLayer.GetScore(gameId).TotalHappiness}");
+            Log.Information($"Final Co2: {GameLayer.GetScore(gameId).TotalCo2}");
+
+            Log.Information($"Final pop score: {GameLayer.GetScore(gameId).FinalPopulation * 15}");
+            Log.Information($"Final happines score: {GameLayer.GetScore(gameId).TotalHappiness / 10}");
+            Log.Information($"Final Co2 score: {GameLayer.GetScore(gameId).TotalCo2}");
+
             Log.Information($"Done with game: {GameLayer.GetState().GameId}");
             Log.Information(GameLayer.GetScore(gameId).FinalScore.ToString());
-            
 
             Log.CloseAndFlush();
             Console.ReadKey();
