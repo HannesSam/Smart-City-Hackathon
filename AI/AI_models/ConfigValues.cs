@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DotNet.models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,10 +15,11 @@ namespace DotNet.AI.AI_models
         public int NumberOfResidenceBuildings { get; set; }
         public int HousingQueue { get; set; }
         public int FundsLevelBuildHouse {get; set;}
-        public int TypeOfHouse { get; set; }
+        public Residence TypeOfHouse { get; set; }
         public int BuildingMaxTemp { get; set; }
         public int BuildingMinTemp { get; set; }
         public double TempAdjustValue { get; set; }
+        public int PartOfUtilityBuildings { get; set; }
 
         public ConfigValues()
         {
@@ -29,10 +31,11 @@ namespace DotNet.AI.AI_models
             NumberOfResidenceBuildings = 2;
             HousingQueue = 10;
             FundsLevelBuildHouse = 10000;
-            TypeOfHouse = 1;
+            TypeOfHouse = Residence.ModernApartments;
             BuildingMaxTemp = 24;
-            BuildingMinTemp = 18;
+            BuildingMinTemp = 19;
             TempAdjustValue = 1.8;
+            PartOfUtilityBuildings = 6;
         }
     }
 }

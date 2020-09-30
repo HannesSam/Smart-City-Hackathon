@@ -12,17 +12,19 @@ namespace DotNet.AI
     class AI_nr2
     {
         private readonly GameLayer GameLayer;
-        private List<BuildableTile> ListOfBuildPositions;
-        private List<BuildableTile> Temp;
-        private List<BuildableTile> BuildingsUnderConstr;
-        private List<BuildableTile> ConstructedBuildings;
 
-        public AI_nr2(GameLayer GL)
+        private List<BuildableTile> ListOfBuildPositions;
+        private List<BuildableTile> UtilityPositions;
+        private List<BuildableTile> ResidencePositions;
+        readonly ConfigValues config;
+
+        public AI_nr2(GameLayer GL, ConfigValues config)
         {
             GameLayer = GL;
+            this.config = config;
             ListOfBuildPositions = new List<BuildableTile>();
-            Temp = new List<BuildableTile>();
-            ConstructedBuildings = new List<BuildableTile>();
+            UtilityPositions = new List<BuildableTile>();
+            ResidencePositions = new List<BuildableTile>();
         }
 
         public void ConfigureMap()
@@ -37,7 +39,7 @@ namespace DotNet.AI
                         int value = 1;
 
                         //Checks to see if the six squares around it are buildable land or not. Then raises that tiles score by one. 
-                        if (CheckTile(state.Map, i - 1, j -1))
+                        if (CheckTile(state.Map, i - 1, j - 1))
                         {
                             value++;
                         }
@@ -61,7 +63,7 @@ namespace DotNet.AI
                         {
                             value++;
                         }
-                        if (CheckTile(state.Map, i +1 , j))
+                        if (CheckTile(state.Map, i + 1, j))
                         {
                             value++;
                         }
@@ -78,10 +80,58 @@ namespace DotNet.AI
                     }
                 }
             }
+            //Sortera listan efter mest värdefulla positionerna. 
             ListOfBuildPositions = ListOfBuildPositions.OrderByDescending(x => x.Value).ToList();
+
+            //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
+            //Utility buildings får de mest värdefulla platserna då de har area of effect vilket vi ska se till täcker så många hus som möjligt.
+            UtilityPositions = ListOfBuildPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
+
+            //Detta gör så att vi bygger en jämn blanding av alla utilitybuildings
+            int counter = 0;
+            foreach (var item in UtilityPositions)
+            {
+                if (counter == 0)
+                {
+                    item.UtilityType = Utility.Park;
+                }
+                else if (counter == 1)
+                {
+                    item.UtilityType = Utility.Mall;
+                }
+                else if (counter == 2 )
+                {
+                    item.UtilityType = Utility.WindTurbine;
+                }
+
+                counter++;
+                if (counter == 3) 
+                {
+                    counter = 0;
+                }
+            }
+
+            ListOfBuildPositions.RemoveRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
+
+            //De byggplatser som finns kvar sparas för att bygga hus på.
+            ResidencePositions = ListOfBuildPositions;
+            //sätt alla hus till de hus vi har definerat i config klassen
+            foreach (var item in ResidencePositions)
+            {
+                item.ResidenceType = config.TypeOfHouse;
+            }
+
+            //detta är bara ett test för den senaste metan när man får bonus för att det finns flera typer av hus på varje bana.
+            ResidencePositions[3].ResidenceType = Residence.Apartments;
+            ResidencePositions[4].ResidenceType = Residence.Cabin;
+            ResidencePositions[5].ResidenceType = Residence.HighRise;
+            ResidencePositions[6].ResidenceType = Residence.LuxuryResidence;
+            ResidencePositions[7].ResidenceType = Residence.EnviromentalHouse;
+            //Lägg till resten till listan med residence positions
+
         }
 
-        public void Take_turn(string gameId, ConfigValues config)
+        public void Take_turn(string gameId)
         {
 
             //Vi skapar "Urgency values" som alltid ska refleketera hur viktigt något är att göra denna tur.
@@ -123,16 +173,20 @@ namespace DotNet.AI
             //Evaluate neccissity of every task
 
             //start build
-            if (state.ResidenceBuildings.Count < config.NumberOfResidenceBuildings)
+            if (ResidencePositions.Count < 1)
+            {
+                //Gör ingenting
+            }
+            else if (state.ResidenceBuildings.Count < config.NumberOfResidenceBuildings)
             {
                 StartBuildTask.Value = 70;
             }
-            else if(state.Funds > config.FundsLevelBuildHouse && state.HousingQueue > config.HousingQueue)
+            else if (state.Funds > config.FundsLevelBuildHouse && state.HousingQueue > config.HousingQueue)
             {
                 StartBuildTask.Value = 40;
             }
             //Utility buildings
-            if(state.UtilityBuildings.Count < 3 && state.Funds > 20000)
+            else if (UtilityPositions.Count > 0 && state.Funds > 20000)
             {
                 UtilityTask.Value = 30;
             }
@@ -160,7 +214,7 @@ namespace DotNet.AI
             for (int i = 0; i < state.UtilityBuildings.Count; i++)
             {
                 var building = state.UtilityBuildings[i];
-                if (building.BuildProgress < 100 )
+                if (building.BuildProgress < 100)
                 {
                     BuildTask.Value = 80;
                 }
@@ -181,12 +235,10 @@ namespace DotNet.AI
             switch (taskToPerform)
             {
                 case GameTask.StartBuild:
-                    var building = ListOfBuildPositions[0];
-                    GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[config.TypeOfHouse].BuildingName,
+                    var building = ResidencePositions[0];
+                    GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
-                    ListOfBuildPositions.RemoveAt(0);
-                    //BuildableTile build = new BuildableTile(building.XSpot, building.YSpot);
-                    //ConstructedBuildings.Add(build);
+                    ResidencePositions.RemoveAt(0);
                     break;
                 case GameTask.Build:
                     for (int i = 0; i < state.ResidenceBuildings.Count; i++)
@@ -209,10 +261,10 @@ namespace DotNet.AI
                     }
                     break;
                 case GameTask.BuildUtility:
-                        var utilityBuilding = ListOfBuildPositions[0];
-                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[2].BuildingName,
+                    var utilityBuilding = UtilityPositions[0];
+                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[(int) UtilityPositions[0].UtilityType].BuildingName,
         gameId);
-                    ListOfBuildPositions.RemoveAt(0);
+                    UtilityPositions.RemoveAt(0);
                     break;
                 case GameTask.Repair:
                     for (int i = 0; i < state.ResidenceBuildings.Count; i++)
