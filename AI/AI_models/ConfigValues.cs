@@ -32,9 +32,9 @@ namespace DotNet.AI.AI_models
             HousingQueue = 10;
             FundsLevelBuildHouse = 10000;
             TypeOfHouse = Residence.ModernApartments;
-            BuildingMaxTemp = 24;
-            BuildingMinTemp = 19;
-            TempAdjustValue = 1.8;
+            BuildingMaxTemp = 25;
+            BuildingMinTemp = 18;
+            TempAdjustValue = 1.3;
             PartOfUtilityBuildings = 6;
         }
     }

@@ -17,6 +17,7 @@ namespace DotNet.AI
         private List<BuildableTile> UtilityPositions;
         private List<BuildableTile> ResidencePositions;
         readonly ConfigValues config;
+        GameState prevState;
 
         public AI_nr2(GameLayer GL, ConfigValues config)
         {
@@ -145,7 +146,7 @@ namespace DotNet.AI
             // TODO Implement your artificial intelligence here.
             // TODO Taking one action per turn until the game ends.
             // TODO The following is a short example of how to use the StarterKit
-            var state = GameLayer.GetState();
+            GameState state = GameLayer.GetState();
 
             //Urgency values
             int startBuildValue = config.StartBuildValue;
@@ -286,6 +287,12 @@ namespace DotNet.AI
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
                                 * bluePrint.Emissivity / 1 + config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
+
+                            //test av alternativ algoritm 
+                            //var degPerPop = 0.04;
+                            //var degPerExcessMwh = config.TempAdjustValue;
+                            //var energy = (21 - changeTemperatureSpot.Temperature - degPerPop * changeTemperatureSpot.CurrentPop +
+                            //    (changeTemperatureSpot.Temperature - state.CurrentTemp) * bluePrint.Emissivity) / degPerExcessMwh + bluePrint.BaseEnergyNeed;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
@@ -315,6 +322,8 @@ namespace DotNet.AI
             {
                 Log.Information("Error: " + error);
             }
+
+            prevState = state;
 
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DotNet.AI;
 using DotNet.AI.AI_models;
@@ -35,35 +36,72 @@ namespace DotNet
             //Obligatorisk hello world log
             Log.Information("Hello, world!");
 
-            //Config fil som 
             ConfigValues config = new ConfigValues();
             AI_nr2 AI = new AI_nr2(GameLayer, config);
 
+
+            //Ändra denna för att köra programmet i olika konfigurationer
+            int runMode = 1;
+            //1 = kör en gång som vanligt.
+            //2 = kör 6 rundor
+            //3 = kalibrera temp värden
+
+            switch (runMode)
+            {
+                case 1:
+                    string endgame = RunOneGame(AI);
+                    Log.Information(endgame);
+                    break;
+                case 2:
+                    RunFourGames(AI);
+                    break;
+                case 3:
+
+                    break;
+                default:
+                    break;
+            }
+
+
+            Log.CloseAndFlush();
+        }
+
+        static void RunFourGames(AI_nr2 AI)
+        {
+            List<string> results = new List<string>();
+            string temp;
+            for (int i = 0; i < 4; i++)
+            {
+                temp = RunOneGame(AI);
+                results.Add(temp);
+            }
+            int counter = 1;
+            foreach (var item in results)
+            {
+                Log.Information($"\nGame number {counter}");
+                Log.Information(item);
+                counter++;
+            }
+        }
+
+        static string RunOneGame(AI_nr2 AI)
+        {
             var gameId = GameLayer.NewGame(Map);
             Log.Information($"Starting game: {GameLayer.GetState().GameId}");
             GameLayer.StartGame(gameId);
             AI.ConfigureMap();
-
 
             while (GameLayer.GetState().Turn < GameLayer.GetState().MaxTurns)
             {
                 AI.Take_turn(gameId);
 
             }
-            Log.Information($"Final money: {GameLayer.GetState().Funds}");
-            Log.Information($"Final pop: {GameLayer.GetScore(gameId).FinalPopulation}");
-            Log.Information($"Final happines: {GameLayer.GetScore(gameId).TotalHappiness}");
-            Log.Information($"Final Co2: {GameLayer.GetScore(gameId).TotalCo2}");
+            string endgame = string.Format("Money: {0} \nPop: {1} \nHappiness: {2} \nCo2: {3} \n\nFinal Pop Score: {4}, \nFinal Happiness Score: {5} \nFinal Co2 Score: {6} \nFinal Score: {7} \nDone with game {8}",
+               GameLayer.GetState().Funds, GameLayer.GetScore(gameId).FinalPopulation, GameLayer.GetScore(gameId).TotalHappiness, GameLayer.GetScore(gameId).TotalCo2,
+               GameLayer.GetScore(gameId).FinalPopulation * 15, GameLayer.GetScore(gameId).TotalHappiness / 10, GameLayer.GetScore(gameId).TotalCo2, GameLayer.GetScore(gameId).FinalScore.ToString(),
+               GameLayer.GetState().GameId);
+            return endgame;
 
-            Log.Information($"Final pop score: {GameLayer.GetScore(gameId).FinalPopulation * 15}");
-            Log.Information($"Final happines score: {GameLayer.GetScore(gameId).TotalHappiness / 10}");
-            Log.Information($"Final Co2 score: {GameLayer.GetScore(gameId).TotalCo2}");
-
-            Log.Information($"Done with game: {GameLayer.GetState().GameId}");
-            Log.Information(GameLayer.GetScore(gameId).FinalScore.ToString());
-
-            Log.CloseAndFlush();
-            Console.ReadKey();
         }
 
     }
