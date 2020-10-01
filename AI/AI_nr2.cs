@@ -17,6 +17,8 @@ namespace DotNet.AI
         private List<BuildableTile> UtilityPositions;
         private List<BuildableTile> ResidencePositions;
         private List<BuildableTile> ListOfUtilityPositions;
+        private List<BuildableTile> BuiltResidences;
+        private List<BuildableTile> BuiltUtilitys;
 
         readonly ConfigValues config;
         GameState prevState;
@@ -29,6 +31,8 @@ namespace DotNet.AI
             UtilityPositions = new List<BuildableTile>();
             ResidencePositions = new List<BuildableTile>();
             ListOfUtilityPositions = new List<BuildableTile>();
+            BuiltResidences = new List<BuildableTile>();
+            BuiltUtilitys = new List<BuildableTile>();
 
         }
 
@@ -309,6 +313,8 @@ namespace DotNet.AI
             //implementera start värde
             UrgencyValue UtilityTask = new UrgencyValue(0, GameTask.BuildUtility);
             urgencyValues.Add(UtilityTask);
+            UrgencyValue UpgradetTask = new UrgencyValue(20, GameTask.Upgrade);
+            urgencyValues.Add(UpgradetTask);
             UrgencyValue RepairTask = new UrgencyValue(repairValue, GameTask.Repair);
             urgencyValues.Add(RepairTask);
             UrgencyValue TemperatureTask = new UrgencyValue(temperatureValue, GameTask.ChangeTemperature);
@@ -382,9 +388,20 @@ namespace DotNet.AI
             {
                 case GameTask.StartBuild:
                     var building = ResidencePositions[0];
+                    int residenceType = 1;
+                    if (state.Funds>100000)
+                    {
+                        if (state.TotalCo2 < 30000)
+                        {
+                            ResidencePositions[0].ResidenceType = Residence.HighRise;
+                        }
+                        else
+                        {
+                            ResidencePositions[0].ResidenceType = Residence.ModernApartments;
+                        }
+                    }
                     GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
-
                     ResidencePositions.RemoveAt(0);
                     break;
                 case GameTask.Build:
@@ -409,8 +426,9 @@ namespace DotNet.AI
                     break;
                 case GameTask.BuildUtility:
                     var utilityBuilding = UtilityPositions[0];
-                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[(int) UtilityPositions[0].UtilityType].BuildingName,
+                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[(int)UtilityPositions[0].UtilityType].BuildingName,
         gameId);
+                    BuiltUtilitys.Add(UtilityPositions[0]);
                     UtilityPositions.RemoveAt(0);
                     break;
                 case GameTask.Repair:
@@ -420,6 +438,17 @@ namespace DotNet.AI
                         if (repairSpot.Health < 50)
                         {
                             GameLayer.Maintenance(repairSpot.Position, gameId);
+                            break;
+                        }
+                    }
+                    break;
+                case GameTask.Upgrade:
+                    for (int i = 0; i < BuiltResidences.Count; i++)
+                    {
+                        var residence = BuiltResidences[i];
+                        if (residence.UpgradeType == Upgrades.None)
+                        {
+                            GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[1].Name, gameId);
                             break;
                         }
                     }
