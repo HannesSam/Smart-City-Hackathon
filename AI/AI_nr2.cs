@@ -95,8 +95,12 @@ namespace DotNet.AI
             ListOfBuildPositions = ListOfBuildPositions.OrderByDescending(x => x.Value).ToList();
 
             //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
-            //Utility buildings får de mest värdefulla platserna då de har area of effect vilket vi ska se till täcker så många hus som möjligt.
-            UtilityPositions = ListOfBuildPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
+            BestUtilityPositions();
+            UtilityPositions = ListOfUtilityPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
+
+            //Tar bort positionerna i UtilityPositions i ListOfBuildPositions
+            ReserveUtilityPositions();
+
 
             //Detta gör så att vi bygger en jämn blanding av alla utilitybuildings
             int counter = 0;
@@ -122,10 +126,6 @@ namespace DotNet.AI
                 }
             }
 
-            ListOfBuildPositions.RemoveRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
-
-            //De byggplatser som finns kvar sparas för att bygga hus på.
-            ResidencePositions = ListOfBuildPositions;
             //sätt alla hus till de hus vi har definerat i config klassen
             foreach (var item in ResidencePositions)
             {
@@ -147,138 +147,79 @@ namespace DotNet.AI
                 //ökar inte om en närliggande byggnad är en annan utilitybyggnad. 
         
         //Egentligen borde man utgå från ListOfBuildPositions så slipper man söka igenom hela brädet igen.
-        public void BestUtilityPositions(int numberOfUtilities)
+        public void BestUtilityPositions()
         {
             var state = GameLayer.GetState();
-            var effectedByMall = new List<Tuple<int, int>>();
-            var effectedByWindTurbine = new List<Tuple<int, int>>();
-            var effectedByPark = new List<Tuple<int, int>>();
-            for (int k = 0; k < numberOfUtilities; k++)
+            for (var i = 0; i < 10; i++)
             {
-                for (var i = 0; i < 10; i++)
+                for (var j = 0; j < 10; j++)
                 {
-                    for (var j = 0; j < 10; j++)
+                    if (state.Map[i][j] == 0)
                     {
-                        if (state.Map[i][j] == 0)
+                        int value = 1;
+
+                        //Checks to see if the squares in a radius of 2 is buildable
+                        if (CheckTile(state.Map, i, j))
                         {
-                            int value = 1;
-
-                            //Checks to see if the squares in a radius of 2 is buildable
-                            if (CheckTile(state.Map, i - 2, j - 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 1, j - 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i, j - 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 1, j - 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 2, j - 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 2, j - 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 1, j - 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i, j - 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 1, j - 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 2, j - 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 2, j))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 1, j))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i, j))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 1, j))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 2, j))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 2, j + 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 1, j + 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i, j + 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 1, j + 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 2, j + 1))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 2, j + 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i - 1, j + 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i, j + 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 1, j + 2))
-                            {
-                                value++;
-                            }
-                            if (CheckTile(state.Map, i + 2, j + 2))
-                            {
-                                value++;
-                            }
-
-
-                            BuildableTile tile = new BuildableTile(i, j, value);
-
-
-                            ListOfUtilityPositions.Add(tile);
+                            value++;
                         }
+                        if (CheckTile(state.Map, i + 1, j ))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 2, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 2, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j - 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j + 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j - 1))
+                        {
+                            value++;
+                        }
+
+
+                        BuildableTile tile = new BuildableTile(i, j, value);
+
+
+                        ListOfUtilityPositions.Add(tile);
                     }
                 }
             }
-        }
-
-        public void ReserveUtilityPositions()
-        {
-
         }
 
         public void Take_turn(string gameId)
@@ -388,18 +329,6 @@ namespace DotNet.AI
             {
                 case GameTask.StartBuild:
                     var building = ResidencePositions[0];
-                    int residenceType = 1;
-                    if (state.Funds>100000)
-                    {
-                        if (state.TotalCo2 < 30000)
-                        {
-                            ResidencePositions[0].ResidenceType = Residence.HighRise;
-                        }
-                        else
-                        {
-                            ResidencePositions[0].ResidenceType = Residence.ModernApartments;
-                        }
-                    }
                     GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
                     ResidencePositions.RemoveAt(0);
@@ -502,6 +431,20 @@ namespace DotNet.AI
 
         }
 
+        private void ReserveUtilityPositions()
+        {
+            foreach (var item in ListOfBuildPositions)
+            {
+                foreach (var item2 in UtilityPositions)
+                {
+                    if (item2.XSpot == item.XSpot && item2.YSpot == item.YSpot)
+                    {
+                        ListOfBuildPositions.Remove(item);
+                    }
+                }
+            }
+        }
+
         private bool CheckTile(int[][] map, int x, int y)
         {
             try
@@ -514,6 +457,51 @@ namespace DotNet.AI
             catch (Exception)
             {
                 return false;
+            }
+            return false;
+        }
+
+        //Kan användas om man ska bygga fler än 3 utilities.
+        private bool CheckAOE(int x, int y, string aoetype)
+        {
+            switch (aoetype)
+            {
+                case "mall1":
+                    foreach (var item in BuiltResidences)
+                    {
+                        if (item.XSpot == x && item.YSpot == y && item.mall1Effect == true)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                case "mall2":
+                    foreach (var item in BuiltResidences)
+                    {
+                        if (item.XSpot == x && item.YSpot == y && item.mall2Effect == true)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                case "windturbine":
+                    foreach (var item in BuiltResidences)
+                    {
+                        if (item.XSpot == x && item.YSpot == y && item.windTurbineEffect == true)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                case "park":
+                    foreach (var item in BuiltResidences)
+                    {
+                        if (item.XSpot == x && item.YSpot == y && item.parkEffect == true)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
             }
             return false;
         }
