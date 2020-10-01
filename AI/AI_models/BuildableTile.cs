@@ -14,7 +14,7 @@ namespace DotNet.models
         public int Value { get; set; }
         public Utility UtilityType {get; set;}
         public Residence ResidenceType { get; set; }
-        public Upgrades UpgradesType { get; set; }
+        public Upgrades UpgradeType { get; set; }
         public bool mall1Effect { get; set; }
 
         public bool mall2Effect { get; set; }
@@ -30,7 +30,7 @@ namespace DotNet.models
             XSpot = xSpot;
             YSpot = ySpot;
             Value = value;
-            UpgradesType = Upgrades.None;
+            UpgradeType = Upgrades.None;
         }
     }
 
