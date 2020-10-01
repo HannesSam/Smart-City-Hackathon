@@ -16,6 +16,7 @@ namespace DotNet.AI
         private List<BuildableTile> ListOfBuildPositions;
         private List<BuildableTile> UtilityPositions;
         private List<BuildableTile> ResidencePositions;
+        private List<BuildableTile> ListOfUtilityPositions;
         readonly ConfigValues config;
 
         public AI_nr2(GameLayer GL, ConfigValues config)
@@ -25,8 +26,12 @@ namespace DotNet.AI
             ListOfBuildPositions = new List<BuildableTile>();
             UtilityPositions = new List<BuildableTile>();
             ResidencePositions = new List<BuildableTile>();
+            ListOfUtilityPositions = new List<BuildableTile>();
+
         }
 
+        //Alla lediga tiles får ett värde beroende på hur många lediga rutor som finns i en radie av 1. Läggs in i ListOfBuildPositions.
+        // TODO När man bygger en Utility borde denna updateras. 
         public void ConfigureMap()
         {
             var state = GameLayer.GetState();
@@ -122,12 +127,145 @@ namespace DotNet.AI
             }
 
             //detta är bara ett test för den senaste metan när man får bonus för att det finns flera typer av hus på varje bana.
-            ResidencePositions[3].ResidenceType = Residence.Apartments;
-            ResidencePositions[4].ResidenceType = Residence.Cabin;
-            ResidencePositions[5].ResidenceType = Residence.HighRise;
-            ResidencePositions[6].ResidenceType = Residence.LuxuryResidence;
-            ResidencePositions[7].ResidenceType = Residence.EnviromentalHouse;
+            //ResidencePositions[3].ResidenceType = Residence.Apartments;
+            //ResidencePositions[4].ResidenceType = Residence.Cabin;
+            //ResidencePositions[5].ResidenceType = Residence.HighRise;
+            //ResidencePositions[6].ResidenceType = Residence.LuxuryResidence;
+            //ResidencePositions[7].ResidenceType = Residence.EnviromentalHouse;
             //Lägg till resten till listan med residence positions
+
+        }
+
+        //Alla lediga tiles får ett värde beroende på hur många lediga rutor som finns i en radie av 1. Läggs in i ListOfUtilityPositions. 
+        // TODO Updatera värdet varje gång någonting byggs. Värdet ökar ju fler byggnader och potentiella byggnader som byggs och 
+                //ökar inte om en närliggande byggnad är en annan utilitybyggnad. 
+        
+        //Egentligen borde man utgå från ListOfBuildPositions så slipper man söka igenom hela brädet igen.
+        public void BestUtilityPositions()
+        {
+            var state = GameLayer.GetState();
+            for (var i = 0; i < 10; i++)
+            {
+                for (var j = 0; j < 10; j++)
+                {
+                    if (state.Map[i][j] == 0)
+                    {
+                        int value = 1;
+
+                        //Checks to see if the squares in a radius of 2 is buildable
+                        if (CheckTile(state.Map, i - 2, j - 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j - 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j - 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j - 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 2, j - 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 2, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 2, j - 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 2, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 2, j))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 2, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 2, j + 1))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 2, j + 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i - 1, j + 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i, j + 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 1, j + 2))
+                        {
+                            value++;
+                        }
+                        if (CheckTile(state.Map, i + 2, j + 2))
+                        {
+                            value++;
+                        }
+
+
+                        BuildableTile tile = new BuildableTile(i, j, value);
+
+
+                        ListOfUtilityPositions.Add(tile);
+                    }
+                }
+            }
+        }
+
+        public void ReserveUtilityPositions()
+        {
 
         }
 
@@ -236,6 +374,18 @@ namespace DotNet.AI
             {
                 case GameTask.StartBuild:
                     var building = ResidencePositions[0];
+                    int residenceType = 1;
+                    if (state.Funds>100000)
+                    {
+                        if (state.TotalCo2 < 30000)
+                        {
+                            ResidencePositions[0].ResidenceType = Residence.HighRise;
+                        }
+                        else
+                        {
+                            ResidencePositions[0].ResidenceType = Residence.ModernApartments;
+                        }
+                    }
                     GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
                     ResidencePositions.RemoveAt(0);
