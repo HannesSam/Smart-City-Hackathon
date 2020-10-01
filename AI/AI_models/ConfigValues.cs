@@ -34,7 +34,7 @@ namespace DotNet.AI.AI_models
             TypeOfHouse = Residence.ModernApartments;
             BuildingMaxTemp = 25;
             BuildingMinTemp = 18;
-            TempAdjustValue = 1.3;
+            TempAdjustValue = 1.9;
             PartOfUtilityBuildings = 6;
         }
     }
