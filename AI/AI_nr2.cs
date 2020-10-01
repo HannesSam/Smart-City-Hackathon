@@ -17,8 +17,7 @@ namespace DotNet.AI
         private List<BuildableTile> UtilityPositions;
         private List<BuildableTile> ResidencePositions;
         private List<BuildableTile> ListOfUtilityPositions;
-        private List<BuildableTile> BuiltResidences;
-        private List<BuildableTile> BuiltUtilitys;
+
         readonly ConfigValues config;
         GameState prevState;
 
@@ -30,8 +29,6 @@ namespace DotNet.AI
             UtilityPositions = new List<BuildableTile>();
             ResidencePositions = new List<BuildableTile>();
             ListOfUtilityPositions = new List<BuildableTile>();
-            BuiltResidences = new List<BuildableTile>();
-            BuiltUtilitys = new List<BuildableTile>();
 
         }
 
@@ -146,124 +143,130 @@ namespace DotNet.AI
                 //ökar inte om en närliggande byggnad är en annan utilitybyggnad. 
         
         //Egentligen borde man utgå från ListOfBuildPositions så slipper man söka igenom hela brädet igen.
-        public void BestUtilityPositions()
+        public void BestUtilityPositions(int numberOfUtilities)
         {
             var state = GameLayer.GetState();
-            for (var i = 0; i < 10; i++)
+            var effectedByMall = new List<Tuple<int, int>>();
+            var effectedByWindTurbine = new List<Tuple<int, int>>();
+            var effectedByPark = new List<Tuple<int, int>>();
+            for (int k = 0; k < numberOfUtilities; k++)
             {
-                for (var j = 0; j < 10; j++)
+                for (var i = 0; i < 10; i++)
                 {
-                    if (state.Map[i][j] == 0)
+                    for (var j = 0; j < 10; j++)
                     {
-                        int value = 1;
+                        if (state.Map[i][j] == 0)
+                        {
+                            int value = 1;
 
-                        //Checks to see if the squares in a radius of 2 is buildable
-                        if (CheckTile(state.Map, i - 2, j - 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 1, j - 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i, j - 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 1, j - 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 2, j - 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 2, j - 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 1, j - 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i, j - 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 1, j - 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 2, j - 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 2, j))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 1, j))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i, j))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 1, j))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 2, j))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 2, j + 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 1, j + 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i, j + 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 1, j + 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 2, j + 1))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 2, j + 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i - 1, j + 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i, j + 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 1, j + 2))
-                        {
-                            value++;
-                        }
-                        if (CheckTile(state.Map, i + 2, j + 2))
-                        {
-                            value++;
-                        }
+                            //Checks to see if the squares in a radius of 2 is buildable
+                            if (CheckTile(state.Map, i - 2, j - 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 1, j - 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i, j - 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 1, j - 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 2, j - 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 2, j - 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 1, j - 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i, j - 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 1, j - 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 2, j - 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 2, j))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 1, j))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i, j))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 1, j))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 2, j))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 2, j + 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 1, j + 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i, j + 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 1, j + 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 2, j + 1))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 2, j + 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i - 1, j + 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i, j + 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 1, j + 2))
+                            {
+                                value++;
+                            }
+                            if (CheckTile(state.Map, i + 2, j + 2))
+                            {
+                                value++;
+                            }
 
 
-                        BuildableTile tile = new BuildableTile(i, j, value);
+                            BuildableTile tile = new BuildableTile(i, j, value);
 
 
-                        ListOfUtilityPositions.Add(tile);
+                            ListOfUtilityPositions.Add(tile);
+                        }
                     }
                 }
             }
@@ -395,7 +398,7 @@ namespace DotNet.AI
                     var building = ResidencePositions[0];               
                     GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
-                    BuiltResidences.Add(ResidencePositions[0]);
+
                     ResidencePositions.RemoveAt(0);
                     break;
                 case GameTask.Build:
@@ -420,9 +423,8 @@ namespace DotNet.AI
                     break;
                 case GameTask.BuildUtility:
                     var utilityBuilding = UtilityPositions[0];
-                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[(int)UtilityPositions[0].UtilityType].BuildingName,
+                    GameLayer.StartBuild(new Position(utilityBuilding.XSpot, utilityBuilding.YSpot), state.AvailableUtilityBuildings[(int) UtilityPositions[0].UtilityType].BuildingName,
         gameId);
-                    BuiltUtilitys.Add(UtilityPositions[0]);
                     UtilityPositions.RemoveAt(0);
                     break;
                 case GameTask.Repair:
