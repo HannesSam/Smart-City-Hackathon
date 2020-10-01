@@ -14,6 +14,15 @@ namespace DotNet.models
         public int Value { get; set; }
         public Utility UtilityType {get; set;}
         public Residence ResidenceType { get; set; }
+        public bool mall1Effect { get; set; }
+
+        public bool mall2Effect { get; set; }
+
+        public bool windTurbineEffect { get; set; }
+        public bool parkEffect { get; set; }
+        public bool hasBuilding { get; set; }
+
+
 
         public BuildableTile(int xSpot, int ySpot, int value)
         {
