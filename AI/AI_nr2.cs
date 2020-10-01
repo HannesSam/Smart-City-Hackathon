@@ -310,7 +310,7 @@ namespace DotNet.AI
             for (int i = 0; i < BuiltResidences.Count; i++)
             {
                 var building = BuiltResidences[i];
-                if (state.Funds > 8000 && building.UpgradesType == Upgrades.None)
+                if (state.Funds > 8000 && building.UpgradeType == Upgrades.None)
                 {
                     UpgradetTask.Value = 20;
                 }
@@ -388,10 +388,10 @@ namespace DotNet.AI
                     for (int i = 0; i < BuiltResidences.Count; i++)
                     {
                         var residence = BuiltResidences[i];
-                        if (residence.UpgradesType == Upgrades.None)
+                        if (residence.UpgradeType == Upgrades.None)
                         {
                             GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[3].Name, gameId);
-                            BuiltResidences[i].UpgradesType = Upgrades.SolarPanel;
+                            BuiltResidences[i].UpgradeType = Upgrades.SolarPanel;
                             break;
                         }
                     }
