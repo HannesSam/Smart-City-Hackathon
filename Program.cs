@@ -41,7 +41,7 @@ namespace DotNet
 
 
             //Ändra denna för att köra programmet i olika konfigurationer
-            int runMode = 1;
+            int runMode = 2;
             //1 = kör en gång som vanligt.
             //2 = kör 6 rundor
             //3 = kalibrera temp värden
