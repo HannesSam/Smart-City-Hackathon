@@ -97,6 +97,7 @@ namespace DotNet.AI
 
             //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
             UtilityPositions = BestUtilityPositions((ListOfBuildPositions.Count / config.PartOfUtilityBuildings), UtilityPositions);
+            Console.WriteLine("Antal Utilities = " + UtilityPositions.Count);
             //Tar bort positionerna som finns i UtilityPositions i ListOfBuildPositions
             ReserveUtilityPositions();
             ResidencePositions = ListOfBuildPositions;
@@ -284,7 +285,7 @@ namespace DotNet.AI
             //Evaluate neccissity of every task
 
             //start build
-            if (ResidencePositions.Count == 0)
+            if (ResidencePositions.Count == 0 && UtilityPositions.Count == 0)
             {
                 //Gör ingenting
             }
@@ -297,7 +298,7 @@ namespace DotNet.AI
                 StartBuildTask.Value = 40;
             }
             //Utility buildings
-            else if (UtilityPositions.Count > 0 && state.Funds > 20000)
+            else if (UtilityPositions.Count > 0 && state.Funds > 20000 && BuiltResidences.Count>BuiltUtilitys.Count*3)
             {
                 UtilityTask.Value = 30;
             }
@@ -465,10 +466,10 @@ namespace DotNet.AI
 
         private void ReserveUtilityPositions()
         {
-            for (int i = 0; i < UtilityPositions.Count-1; i++)
+            for (int i = 0; i < UtilityPositions.Count; i++)
             {
                 var item1 = UtilityPositions[i];
-                for (int j = 0; j < ListOfBuildPositions.Count-1; j++)
+                for (int j = 0; j < ListOfBuildPositions.Count; j++)
                 {
                     var item2 = ListOfBuildPositions[j];
                     if (item1.XSpot == item2.XSpot && item1.YSpot == item2.YSpot)
