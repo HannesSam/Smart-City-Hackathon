@@ -94,13 +94,12 @@ namespace DotNet.AI
             //Sortera listan efter mest värdefulla positionerna. 
             ListOfBuildPositions = ListOfBuildPositions.OrderByDescending(x => x.Value).ToList();
 
+
             //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
-            BestUtilityPositions();
-            UtilityPositions = ListOfUtilityPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
-
-            //Tar bort positionerna i UtilityPositions i ListOfBuildPositions
+            UtilityPositions = BestUtilityPositions((ListOfBuildPositions.Count / config.PartOfUtilityBuildings), UtilityPositions);
+            //Tar bort positionerna som finns i UtilityPositions i ListOfBuildPositions
             ReserveUtilityPositions();
-
+            ResidencePositions = ListOfBuildPositions;
 
             //Detta gör så att vi bygger en jämn blanding av alla utilitybuildings
             int counter = 0;
@@ -142,12 +141,8 @@ namespace DotNet.AI
 
         }
 
-        //Alla lediga tiles får ett värde beroende på hur många lediga rutor som finns i en radie av 1. Läggs in i ListOfUtilityPositions. 
-        // TODO Updatera värdet varje gång någonting byggs. Värdet ökar ju fler byggnader och potentiella byggnader som byggs och 
-                //ökar inte om en närliggande byggnad är en annan utilitybyggnad. 
-        
-        //Egentligen borde man utgå från ListOfBuildPositions så slipper man söka igenom hela brädet igen.
-        public void BestUtilityPositions()
+        //Alla lediga tiles får ett värde beroende på hur många lediga rutor som finns i en radie av 2. Läggs in i ListOfUtilityPositions. 
+        public List<BuildableTile> BestUtilityPositions(int antalUtilities, List<BuildableTile> supportBuildings)
         {
             var state = GameLayer.GetState();
             for (var i = 0; i < 10; i++)
@@ -156,14 +151,22 @@ namespace DotNet.AI
                 {
                     if (state.Map[i][j] == 0)
                     {
-                        int value = 1;
-
                         //Checks to see if the squares in a radius of 2 is buildable
-                        if (CheckTile(state.Map, i, j))
+                        //Om den här platsen är reserverad i listan supportBuildings så breakar vi. 
+                        if (reservedTile(i, j, supportBuildings))
                         {
-                            value++;
+                            break;
                         }
-                        if (CheckTile(state.Map, i + 1, j ))
+                        int value;
+                        if (supportBuildings.Count < 1)
+                        {
+                            value = 1;
+                        }
+                        else
+                        {
+                            value = AdjecentSupport(i, j, supportBuildings);
+                        };
+                        if (CheckTile(state.Map, i + 1, j))
                         {
                             value++;
                         }
@@ -212,14 +215,29 @@ namespace DotNet.AI
                             value++;
                         }
 
-
                         BuildableTile tile = new BuildableTile(i, j, value);
-
 
                         ListOfUtilityPositions.Add(tile);
                     }
                 }
             }
+            int maxposition = 0;
+
+            for (int i = 0; i < ListOfUtilityPositions.Count-1; i++)
+            {
+                if (ListOfUtilityPositions[i].Value>ListOfUtilityPositions[maxposition].Value)
+                {
+                    maxposition = i;
+                }
+            }
+            supportBuildings.Add(ListOfUtilityPositions[maxposition]);
+            if (antalUtilities - 1 == 0)
+            {
+
+                return supportBuildings;
+            }
+            ListOfUtilityPositions.Clear();
+            return BestUtilityPositions(antalUtilities - 1, supportBuildings);
         }
 
         public void Take_turn(string gameId)
@@ -266,7 +284,7 @@ namespace DotNet.AI
             //Evaluate neccissity of every task
 
             //start build
-            if (ResidencePositions.Count < 1)
+            if (ResidencePositions.Count == 0)
             {
                 //Gör ingenting
             }
@@ -340,7 +358,7 @@ namespace DotNet.AI
             switch (taskToPerform)
             {
                 case GameTask.StartBuild:
-                    var building = ResidencePositions[0];               
+                    var building = ResidencePositions[0];
                     GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
                     ResidencePositions.RemoveAt(0);
@@ -434,18 +452,78 @@ namespace DotNet.AI
 
         private void ReserveUtilityPositions()
         {
-            foreach (var item in ListOfBuildPositions)
+            for (int i = 0; i < UtilityPositions.Count-1; i++)
             {
-                foreach (var item2 in UtilityPositions)
+                var item1 = UtilityPositions[i];
+                for (int j = 0; j < ListOfBuildPositions.Count-1; j++)
                 {
-                    if (item2.XSpot == item.XSpot && item2.YSpot == item.YSpot)
+                    var item2 = ListOfBuildPositions[j];
+                    if (item1.XSpot == item2.XSpot && item1.YSpot == item2.YSpot)
                     {
-                        ListOfBuildPositions.Remove(item);
+                        ListOfBuildPositions.RemoveAt(j);
                     }
                 }
             }
         }
 
+        private int AdjecentSupport(int x, int y, List<BuildableTile> lista)
+        {
+            int value = 1;
+            if (lista.Count == 0)
+            {
+                return value;
+            }
+
+            if (reservedTile(x, y + 1, lista))
+            {
+                value-=2;
+            }
+            if (reservedTile(x, y + 2, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x, y - 1, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x, y - 2, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x + 1, y - 1, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x + 1, y + 1, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x + 1, y, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x - 1, y, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x - 1, y + 1, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x - 1, y - 1, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x - 2, y, lista))
+            {
+                value -= 2;
+            }
+            if (reservedTile(x + 2, y, lista))
+            {
+                value -= 2;
+            }
+            return value;
+        }
         private bool CheckTile(int[][] map, int x, int y)
         {
             try
@@ -458,6 +536,18 @@ namespace DotNet.AI
             catch (Exception)
             {
                 return false;
+            }
+            return false;
+        }
+
+        private bool reservedTile (int x, int y, List<BuildableTile> upptagna)
+        {
+            foreach (var item in upptagna)
+            {
+                if (item.XSpot==x && item.YSpot==y)
+                {
+                    return true;
+                }
             }
             return false;
         }

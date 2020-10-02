@@ -41,7 +41,7 @@ namespace DotNet
 
 
             //Ändra denna för att köra programmet i olika konfigurationer
-            int runMode = 2;
+            int runMode = 1;
             //1 = kör en gång som vanligt.
             //2 = kör 6 rundor
             //3 = kalibrera temp värden
@@ -90,7 +90,6 @@ namespace DotNet
             Log.Information($"Starting game: {GameLayer.GetState().GameId}");
             GameLayer.StartGame(gameId);
             AI.ConfigureMap();
-            AI.BestUtilityPositions();
 
             while (GameLayer.GetState().Turn < GameLayer.GetState().MaxTurns)
             {
