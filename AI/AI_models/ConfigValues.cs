@@ -20,6 +20,7 @@ namespace DotNet.AI.AI_models
         public int BuildingMinTemp { get; set; }
         public double TempAdjustValue { get; set; }
         public int PartOfUtilityBuildings { get; set; }
+        public List<Upgrades> UpgradesToBuild { get; set; }
 
         public ConfigValues()
         {
@@ -32,10 +33,14 @@ namespace DotNet.AI.AI_models
             HousingQueue = 10;
             FundsLevelBuildHouse = 10000;
             TypeOfHouse = Residence.ModernApartments;
-            BuildingMaxTemp = 25;
+            BuildingMaxTemp = 24;
             BuildingMinTemp = 18;
-            TempAdjustValue = 1.9;
+            TempAdjustValue = 1.95;
             PartOfUtilityBuildings = 5;
+            UpgradesToBuild = new List<Upgrades>();
+            UpgradesToBuild.Add(Upgrades.Playground);
+            UpgradesToBuild.Add(Upgrades.SolarPanel);
+            UpgradesToBuild.Add(Upgrades.Regulator);
         }
     }
 }

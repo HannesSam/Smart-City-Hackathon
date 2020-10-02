@@ -109,19 +109,19 @@ namespace DotNet.AI
             {
                 if (counter == 0)
                 {
-                    item.UtilityType = Utility.Park;
+                    item.UtilityType = Utility.WindTurbine;
                 }
                 else if (counter == 1)
                 {
                     item.UtilityType = Utility.WindTurbine;
                 }
-                else if (counter == 2 )
+                else if (counter == 2)
                 {
                     item.UtilityType = Utility.WindTurbine;
                 }
 
                 counter++;
-                if (counter == 3) 
+                if (counter == 3)
                 {
                     counter = 1;
                 }
@@ -225,9 +225,9 @@ namespace DotNet.AI
             }
             int maxposition = 0;
 
-            for (int i = 0; i < ListOfUtilityPositions.Count-1; i++)
+            for (int i = 0; i < ListOfUtilityPositions.Count - 1; i++)
             {
-                if (ListOfUtilityPositions[i].Value>ListOfUtilityPositions[maxposition].Value)
+                if (ListOfUtilityPositions[i].Value > ListOfUtilityPositions[maxposition].Value)
                 {
                     maxposition = i;
                 }
@@ -329,14 +329,17 @@ namespace DotNet.AI
             //Samma för upgrades. En annan loop här då vi går igenom våran egen lista med byggda byggnader. 
             for (int i = 0; i < BuiltResidences.Count; i++)
             {
-                var building = BuiltResidences[i];
-                if (state.Funds > 8000 && building.UpgradeType == Upgrades.None)
+                var residence = BuiltResidences[i];
+                foreach (var item in config.UpgradesToBuild)
                 {
-                    UpgradetTask.Value = 20;
+                    if (!residence.BuiltUpgrades.Contains(item) && state.Funds > 8000)
+                    {
+                        UpgradetTask.Value = 20;
+                    }
                 }
             }
-                //same for utility buildoings
-                for (int i = 0; i < state.UtilityBuildings.Count; i++)
+            //same for utility buildings
+            for (int i = 0; i < state.UtilityBuildings.Count; i++)
             {
                 var building = state.UtilityBuildings[i];
                 if (building.BuildProgress < 100)
@@ -412,10 +415,19 @@ namespace DotNet.AI
                     for (int i = 0; i < BuiltResidences.Count; i++)
                     {
                         var residence = BuiltResidences[i];
-                        if (residence.UpgradeType == Upgrades.None)
+                        Upgrades upgradeToBuild = Upgrades.None;
+                        foreach (var item in config.UpgradesToBuild)
                         {
-                            GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[3].Name, gameId);
-                            BuiltResidences[i].UpgradeType = Upgrades.SolarPanel;
+                            
+                            if (!residence.BuiltUpgrades.Contains(item))
+                            {
+                                upgradeToBuild = item;
+                            }
+                        }
+                        if(upgradeToBuild != Upgrades.None)
+                        {
+                            GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[(int) upgradeToBuild].Name, gameId);
+                            BuiltResidences[i].BuiltUpgrades.Add(upgradeToBuild);
                             break;
                         }
                     }
@@ -495,7 +507,7 @@ namespace DotNet.AI
 
             if (reservedTile(x, y + 1, lista))
             {
-                value-=2;
+                value -= 2;
             }
             if (reservedTile(x, y + 2, lista))
             {
@@ -559,11 +571,11 @@ namespace DotNet.AI
             return false;
         }
 
-        private bool reservedTile (int x, int y, List<BuildableTile> upptagna)
+        private bool reservedTile(int x, int y, List<BuildableTile> upptagna)
         {
             foreach (var item in upptagna)
             {
-                if (item.XSpot==x && item.YSpot==y)
+                if (item.XSpot == x && item.YSpot == y)
                 {
                     return true;
                 }
@@ -617,4 +629,3 @@ namespace DotNet.AI
         }
     }
 }
-
