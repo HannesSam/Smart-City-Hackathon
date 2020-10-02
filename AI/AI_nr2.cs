@@ -361,6 +361,7 @@ namespace DotNet.AI
                     var building = ResidencePositions[0];
                     GameLayer.StartBuild(new Position(building.XSpot, building.YSpot), state.AvailableResidenceBuildings[(int)ResidencePositions[0].ResidenceType].BuildingName,
         gameId);
+                    BuiltResidences.Add(ResidencePositions[0]);
                     ResidencePositions.RemoveAt(0);
                     break;
                 case GameTask.Build:
@@ -397,6 +398,18 @@ namespace DotNet.AI
                         if (repairSpot.Health < 50)
                         {
                             GameLayer.Maintenance(repairSpot.Position, gameId);
+                            break;
+                        }
+                    }
+                    break;
+                case GameTask.Upgrade:
+                    for (int i = 0; i < BuiltResidences.Count; i++)
+                    {
+                        var residence = BuiltResidences[i];
+                        if (residence.UpgradeType == Upgrades.None)
+                        {
+                            GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[3].Name, gameId);
+                            BuiltResidences[i].UpgradeType = Upgrades.SolarPanel;
                             break;
                         }
                     }
