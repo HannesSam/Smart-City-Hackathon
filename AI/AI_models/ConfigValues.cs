@@ -31,16 +31,18 @@ namespace DotNet.AI.AI_models
             WaitValue = 10;
             NumberOfResidenceBuildings = 2;
             HousingQueue = 10;
-            FundsLevelBuildHouse = 10000;
+            FundsLevelBuildHouse = 8000;
             TypeOfHouse = Residence.ModernApartments;
             BuildingMaxTemp = 24;
-            BuildingMinTemp = 18;
+            BuildingMinTemp = 17;
             TempAdjustValue = 1.95;
-            PartOfUtilityBuildings = 6;
-            UpgradesToBuild = new List<Upgrades>();
-            UpgradesToBuild.Add(Upgrades.Playground);
-            UpgradesToBuild.Add(Upgrades.SolarPanel);
-            UpgradesToBuild.Add(Upgrades.Regulator);
+            PartOfUtilityBuildings = 5;
+            UpgradesToBuild = new List<Upgrades>
+            {
+                Upgrades.Playground,
+                Upgrades.SolarPanel,
+                Upgrades.Regulator
+            };
         }
     }
 }
