@@ -97,11 +97,13 @@ namespace DotNet.AI
 
             //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
             UtilityPositions = BestUtilityPositions((ListOfBuildPositions.Count / config.PartOfUtilityBuildings), UtilityPositions);
+            Console.WriteLine("Antal Utilities = " + UtilityPositions.Count);
             //Tar bort positionerna som finns i UtilityPositions i ListOfBuildPositions
             ReserveUtilityPositions();
             ResidencePositions = ListOfBuildPositions;
 
             //Detta gör så att vi bygger en jämn blanding av alla utilitybuildings
+            // OBS detta är bara Optimalt för tillfället
             int counter = 0;
             foreach (var item in UtilityPositions)
             {
@@ -121,7 +123,7 @@ namespace DotNet.AI
                 counter++;
                 if (counter == 3)
                 {
-                    counter = 0;
+                    counter = 1;
                 }
             }
 
@@ -284,7 +286,7 @@ namespace DotNet.AI
             //Evaluate neccissity of every task
 
             //start build
-            if (ResidencePositions.Count == 0)
+            if (ResidencePositions.Count == 0 && UtilityPositions.Count == 0)
             {
                 //Gör ingenting
             }
@@ -297,7 +299,7 @@ namespace DotNet.AI
                 StartBuildTask.Value = 40;
             }
             //Utility buildings
-            else if (UtilityPositions.Count > 0 && state.Funds > 7500)
+            else if (UtilityPositions.Count > 0 && state.Funds > 20000 && BuiltResidences.Count>BuiltUtilitys.Count*3)
             {
                 UtilityTask.Value = 30;
             }
@@ -349,6 +351,10 @@ namespace DotNet.AI
             //Get the biggest urgencyValue. That being the most urgent task 
             int maxValue = 0;
             GameTask taskToPerform = GameTask.Build;
+            if (ResidencePositions.Count == 0)
+            {
+                taskToPerform = GameTask.Wait;
+            }
             foreach (UrgencyValue item in urgencyValues)
             {
                 if (item.Value > maxValue)
@@ -477,10 +483,10 @@ namespace DotNet.AI
 
         private void ReserveUtilityPositions()
         {
-            for (int i = 0; i < UtilityPositions.Count - 1; i++)
+            for (int i = 0; i < UtilityPositions.Count; i++)
             {
                 var item1 = UtilityPositions[i];
-                for (int j = 0; j < ListOfBuildPositions.Count - 1; j++)
+                for (int j = 0; j < ListOfBuildPositions.Count; j++)
                 {
                     var item2 = ListOfBuildPositions[j];
                     if (item1.XSpot == item2.XSpot && item1.YSpot == item2.YSpot)
