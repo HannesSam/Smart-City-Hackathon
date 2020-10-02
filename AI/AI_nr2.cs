@@ -91,44 +91,9 @@ namespace DotNet.AI
                     }
                 }
             }
-
-            //Tar bort platser där det redan finns byggda hus
-            //Borde även lägga till till listan med byggda hus
-            for (int i = 0; i < state.ResidenceBuildings.Count; i++)
-            {
-                var building = state.ResidenceBuildings[i];
-
-                for (int y = 0; y < ListOfBuildPositions.Count; y++)
-                {
-                    if(ListOfBuildPositions[y].XSpot == building.Position.x && ListOfBuildPositions[y].YSpot == building.Position.y)
-                    {
-                        ListOfBuildPositions.RemoveAt(y);
-                    }
-                }
-
-            }
-            //samma men för utility buidlings
-            for (int i = 0; i < state.UtilityBuildings.Count; i++)
-            {
-                var building = state.UtilityBuildings[i];
-
-                for (int y = 0; y < ListOfBuildPositions.Count; y++)
-                {
-                    if (ListOfBuildPositions[y].XSpot == building.Position.x && ListOfBuildPositions[y].YSpot == building.Position.y)
-                    {
-                        ListOfBuildPositions.RemoveAt(y);
-                    }
-                }
-
-            }
-
-
             //Sortera listan efter mest värdefulla positionerna. 
             ListOfBuildPositions = ListOfBuildPositions.OrderByDescending(x => x.Value).ToList();
 
-            //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
-            BestUtilityPositions();
-            UtilityPositions = ListOfUtilityPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
 
             //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
             UtilityPositions = BestUtilityPositions((ListOfBuildPositions.Count / config.PartOfUtilityBuildings), UtilityPositions);
@@ -142,19 +107,19 @@ namespace DotNet.AI
             {
                 if (counter == 0)
                 {
-                    item.UtilityType = Utility.Park;
+                    item.UtilityType = Utility.WindTurbine;
                 }
                 else if (counter == 1)
                 {
-                    item.UtilityType = Utility.Mall;
+                    item.UtilityType = Utility.WindTurbine;
                 }
-                else if (counter == 2 )
+                else if (counter == 2)
                 {
                     item.UtilityType = Utility.WindTurbine;
                 }
 
                 counter++;
-                if (counter == 3) 
+                if (counter == 3)
                 {
                     counter = 0;
                 }
@@ -258,9 +223,9 @@ namespace DotNet.AI
             }
             int maxposition = 0;
 
-            for (int i = 0; i < ListOfUtilityPositions.Count-1; i++)
+            for (int i = 0; i < ListOfUtilityPositions.Count - 1; i++)
             {
-                if (ListOfUtilityPositions[i].Value>ListOfUtilityPositions[maxposition].Value)
+                if (ListOfUtilityPositions[i].Value > ListOfUtilityPositions[maxposition].Value)
                 {
                     maxposition = i;
                 }
@@ -362,14 +327,17 @@ namespace DotNet.AI
             //Samma för upgrades. En annan loop här då vi går igenom våran egen lista med byggda byggnader. 
             for (int i = 0; i < BuiltResidences.Count; i++)
             {
-                var building = BuiltResidences[i];
-                if (state.Funds > 8000 && building.UpgradeType == Upgrades.None)
+                var residence = BuiltResidences[i];
+                foreach (var item in config.UpgradesToBuild)
                 {
-                    UpgradetTask.Value = 20;
+                    if (!residence.BuiltUpgrades.Contains(item) && state.Funds > 8000)
+                    {
+                        UpgradetTask.Value = 20;
+                    }
                 }
             }
-                //same for utility buildoings
-                for (int i = 0; i < state.UtilityBuildings.Count; i++)
+            //same for utility buildings
+            for (int i = 0; i < state.UtilityBuildings.Count; i++)
             {
                 var building = state.UtilityBuildings[i];
                 if (building.BuildProgress < 100)
@@ -441,10 +409,19 @@ namespace DotNet.AI
                     for (int i = 0; i < BuiltResidences.Count; i++)
                     {
                         var residence = BuiltResidences[i];
-                        if (residence.UpgradeType == Upgrades.None)
+                        Upgrades upgradeToBuild = Upgrades.None;
+                        foreach (var item in config.UpgradesToBuild)
                         {
-                            GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[3].Name, gameId);
-                            BuiltResidences[i].UpgradeType = Upgrades.SolarPanel;
+                            
+                            if (!residence.BuiltUpgrades.Contains(item))
+                            {
+                                upgradeToBuild = item;
+                            }
+                        }
+                        if(upgradeToBuild != Upgrades.None)
+                        {
+                            GameLayer.BuyUpgrade(new Position(residence.XSpot, residence.YSpot), state.AvailableUpgrades[(int) upgradeToBuild].Name, gameId);
+                            BuiltResidences[i].BuiltUpgrades.Add(upgradeToBuild);
                             break;
                         }
                     }
@@ -457,29 +434,22 @@ namespace DotNet.AI
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 + config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.08;
+                                * bluePrint.Emissivity / 1 + config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
 
-                            //test av alternativ algoritm
+                            //test av alternativ algoritm 
                             //var degPerPop = 0.04;
                             //var degPerExcessMwh = config.TempAdjustValue;
                             //var energy = (21 - changeTemperatureSpot.Temperature - degPerPop * changeTemperatureSpot.CurrentPop +
                             //    (changeTemperatureSpot.Temperature - state.CurrentTemp) * bluePrint.Emissivity) / degPerExcessMwh + bluePrint.BaseEnergyNeed;
-                            //GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
+                            GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
                         else if (changeTemperatureSpot.Temperature > config.BuildingMaxTemp)
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 - config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.08;
+                                * bluePrint.Emissivity / 1 - config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
-
-                            //test av alternativ algoritm
-                            //var degPerPop = 0.04;
-                            //var degPerExcessMwh = config.TempAdjustValue;
-                            //var energy = (21 - changeTemperatureSpot.Temperature - degPerPop * changeTemperatureSpot.CurrentPop +
-                            //    (changeTemperatureSpot.Temperature - state.CurrentTemp) * bluePrint.Emissivity) / degPerExcessMwh + bluePrint.BaseEnergyNeed;
-                            //GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
                     }
@@ -507,10 +477,10 @@ namespace DotNet.AI
 
         private void ReserveUtilityPositions()
         {
-            for (int i = 0; i < UtilityPositions.Count-1; i++)
+            for (int i = 0; i < UtilityPositions.Count - 1; i++)
             {
                 var item1 = UtilityPositions[i];
-                for (int j = 0; j < ListOfBuildPositions.Count-1; j++)
+                for (int j = 0; j < ListOfBuildPositions.Count - 1; j++)
                 {
                     var item2 = ListOfBuildPositions[j];
                     if (item1.XSpot == item2.XSpot && item1.YSpot == item2.YSpot)
@@ -531,7 +501,7 @@ namespace DotNet.AI
 
             if (reservedTile(x, y + 1, lista))
             {
-                value-=2;
+                value -= 2;
             }
             if (reservedTile(x, y + 2, lista))
             {
@@ -595,11 +565,11 @@ namespace DotNet.AI
             return false;
         }
 
-        private bool reservedTile (int x, int y, List<BuildableTile> upptagna)
+        private bool reservedTile(int x, int y, List<BuildableTile> upptagna)
         {
             foreach (var item in upptagna)
             {
-                if (item.XSpot==x && item.YSpot==y)
+                if (item.XSpot == x && item.YSpot == y)
                 {
                     return true;
                 }
@@ -653,4 +623,3 @@ namespace DotNet.AI
         }
     }
 }
-

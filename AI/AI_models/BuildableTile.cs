@@ -23,6 +23,7 @@ namespace DotNet.models
         public bool windTurbineEffect { get; set; }
         public bool parkEffect { get; set; }
         public bool hasBuilding { get; set; }
+        public List<Upgrades> BuiltUpgrades { get; set; }
 
 
 
@@ -33,6 +34,7 @@ namespace DotNet.models
             Pos = new Position(ySpot, xSpot);
             Value = value;
             UpgradeType = Upgrades.None;
+            BuiltUpgrades = new List<Upgrades>();
         }
     }
 

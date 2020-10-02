@@ -20,6 +20,7 @@ namespace DotNet.AI.AI_models
         public int BuildingMinTemp { get; set; }
         public double TempAdjustValue { get; set; }
         public int PartOfUtilityBuildings { get; set; }
+        public List<Upgrades> UpgradesToBuild { get; set; }
 
         public ConfigValues()
         {
@@ -36,6 +37,10 @@ namespace DotNet.AI.AI_models
             BuildingMinTemp = 18;
             TempAdjustValue = 1.95;
             PartOfUtilityBuildings = 6;
+            UpgradesToBuild = new List<Upgrades>();
+            UpgradesToBuild.Add(Upgrades.Playground);
+            UpgradesToBuild.Add(Upgrades.SolarPanel);
+            UpgradesToBuild.Add(Upgrades.Regulator);
         }
     }
 }
