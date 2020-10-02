@@ -20,8 +20,8 @@ namespace DotNet
         {
             //Dessa här under kan användas för att rensa i aktiva spel ifall vi inte får starta ett nytt för det är så många på gång.
             //var hej = GameLayer.GetGames();
-            //GameLayer.EndGame("5a512a1d-96fb-4ae2-ba2e-e2968f14f9e8");
-            //GameLayer.EndGame("dc3b2bba-8b70-4724-bdfb-349b40da4d5c");
+            //GameLayer.EndGame("5a638250-d4e0-4d87-832f-cb3bf02d78a1");
+            //GameLayer.EndGame("2fb62f59-ba04-4b35-a871-6875312ac787");
             //GameLayer.EndGame("1a300ac5-c834-4582-8e4b-224af2a9d521");
             //GameLayer.EndGame("caea16a3-5d0c-41e3-9828-95d87cc95189");
 
@@ -41,7 +41,7 @@ namespace DotNet
 
 
             //Ändra denna för att köra programmet i olika konfigurationer
-            int runMode = 2;
+            int runMode = 1;
             //1 = kör en gång som vanligt.
             //2 = kör 6 rundor
             //3 = kalibrera temp värden

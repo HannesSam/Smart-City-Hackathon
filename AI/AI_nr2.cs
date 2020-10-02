@@ -91,16 +91,50 @@ namespace DotNet.AI
                     }
                 }
             }
+
+            //Tar bort platser där det redan finns byggda hus
+            //Borde även lägga till till listan med byggda hus
+            for (int i = 0; i < state.ResidenceBuildings.Count; i++)
+            {
+                var building = state.ResidenceBuildings[i];
+
+                for (int y = 0; y < ListOfBuildPositions.Count; y++)
+                {
+                    if(ListOfBuildPositions[y].XSpot == building.Position.x && ListOfBuildPositions[y].YSpot == building.Position.y)
+                    {
+                        ListOfBuildPositions.RemoveAt(y);
+                    }
+                }
+
+            }
+            //samma men för utility buidlings
+            for (int i = 0; i < state.UtilityBuildings.Count; i++)
+            {
+                var building = state.UtilityBuildings[i];
+
+                for (int y = 0; y < ListOfBuildPositions.Count; y++)
+                {
+                    if (ListOfBuildPositions[y].XSpot == building.Position.x && ListOfBuildPositions[y].YSpot == building.Position.y)
+                    {
+                        ListOfBuildPositions.RemoveAt(y);
+                    }
+                }
+
+            }
+
+
             //Sortera listan efter mest värdefulla positionerna. 
             ListOfBuildPositions = ListOfBuildPositions.OrderByDescending(x => x.Value).ToList();
 
             //Räkna ut hur många platser som ska tas up av utility buildings och lägg till så många platser till listan med UtilityPositions.
-            BestUtilityPositions();
-            UtilityPositions = ListOfUtilityPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
+            //BestUtilityPositions();
+            UtilityPositions = ListOfBuildPositions.GetRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
 
             //Tar bort positionerna i UtilityPositions i ListOfBuildPositions
-            ReserveUtilityPositions();
+            //ReserveUtilityPositions();
+            ListOfBuildPositions.RemoveRange(0, ListOfBuildPositions.Count / config.PartOfUtilityBuildings);
 
+            ResidencePositions = ListOfUtilityPositions;
 
             //Detta gör så att vi bygger en jämn blanding av alla utilitybuildings
             int counter = 0;
@@ -116,7 +150,8 @@ namespace DotNet.AI
                 }
                 else if (counter == 2 )
                 {
-                    item.UtilityType = Utility.WindTurbine;
+                    //Obs ändra denna när du kör på bana 1
+                    item.UtilityType = Utility.Park;
                 }
 
                 counter++;
@@ -404,22 +439,29 @@ namespace DotNet.AI
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 + config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
+                                * bluePrint.Emissivity / 1 + config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.08;
 
-                            //test av alternativ algoritm 
+                            //test av alternativ algoritm
                             //var degPerPop = 0.04;
                             //var degPerExcessMwh = config.TempAdjustValue;
                             //var energy = (21 - changeTemperatureSpot.Temperature - degPerPop * changeTemperatureSpot.CurrentPop +
                             //    (changeTemperatureSpot.Temperature - state.CurrentTemp) * bluePrint.Emissivity) / degPerExcessMwh + bluePrint.BaseEnergyNeed;
-                            GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
+                            //GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
                         else if (changeTemperatureSpot.Temperature > config.BuildingMaxTemp)
                         {
                             var bluePrint = GameLayer.GetResidenceBlueprint(changeTemperatureSpot.BuildingName);
                             var energy = bluePrint.BaseEnergyNeed + (changeTemperatureSpot.Temperature - state.CurrentTemp)
-                                * bluePrint.Emissivity / 1 - config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.04;
+                                * bluePrint.Emissivity / 1 - config.TempAdjustValue - changeTemperatureSpot.CurrentPop * 0.08;
                             GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
+
+                            //test av alternativ algoritm
+                            //var degPerPop = 0.04;
+                            //var degPerExcessMwh = config.TempAdjustValue;
+                            //var energy = (21 - changeTemperatureSpot.Temperature - degPerPop * changeTemperatureSpot.CurrentPop +
+                            //    (changeTemperatureSpot.Temperature - state.CurrentTemp) * bluePrint.Emissivity) / degPerExcessMwh + bluePrint.BaseEnergyNeed;
+                            //GameLayer.AdjustEnergy(changeTemperatureSpot.Position, energy, gameId);
                             break;
                         }
                     }

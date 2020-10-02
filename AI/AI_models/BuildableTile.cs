@@ -11,6 +11,7 @@ namespace DotNet.models
     {
         public int XSpot { get; set; }
         public int YSpot { get; set; }
+        public Position Pos { get; set; }
         public int Value { get; set; }
         public Utility UtilityType {get; set;}
         public Residence ResidenceType { get; set; }
@@ -29,6 +30,7 @@ namespace DotNet.models
         {
             XSpot = xSpot;
             YSpot = ySpot;
+            Pos = new Position(ySpot, xSpot);
             Value = value;
             UpgradeType = Upgrades.None;
         }
