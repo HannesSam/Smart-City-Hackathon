@@ -90,7 +90,6 @@ namespace DotNet
             Log.Information($"Starting game: {GameLayer.GetState().GameId}");
             GameLayer.StartGame(gameId);
             AI.ConfigureMap();
-            AI.BestUtilityPositions();
 
             while (GameLayer.GetState().Turn < GameLayer.GetState().MaxTurns)
             {
