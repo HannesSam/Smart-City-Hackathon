@@ -31,7 +31,7 @@ namespace DotNet.AI.AI_models
             WaitValue = 10;
             NumberOfResidenceBuildings = 2;
             HousingQueue = 10;
-            FundsLevelBuildHouse = 8000;
+            FundsLevelBuildHouse = 7100;
             TypeOfHouse = Residence.ModernApartments;
             BuildingMaxTemp = 24;
             BuildingMinTemp = 17;

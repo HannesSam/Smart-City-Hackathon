@@ -297,7 +297,7 @@ namespace DotNet.AI
                 StartBuildTask.Value = 40;
             }
             //Utility buildings
-            else if (UtilityPositions.Count > 0 && state.Funds > 20000)
+            else if (UtilityPositions.Count > 0 && state.Funds > 7500)
             {
                 UtilityTask.Value = 30;
             }
