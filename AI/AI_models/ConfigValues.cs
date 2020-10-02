@@ -35,7 +35,7 @@ namespace DotNet.AI.AI_models
             BuildingMaxTemp = 25;
             BuildingMinTemp = 18;
             TempAdjustValue = 1.9;
-            PartOfUtilityBuildings = 6;
+            PartOfUtilityBuildings = 5;
         }
     }
 }

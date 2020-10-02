@@ -103,6 +103,7 @@ namespace DotNet.AI
             ResidencePositions = ListOfBuildPositions;
 
             //Detta gör så att vi bygger en jämn blanding av alla utilitybuildings
+            // OBS detta är bara Optimalt för tillfället
             int counter = 0;
             foreach (var item in UtilityPositions)
             {
@@ -112,7 +113,7 @@ namespace DotNet.AI
                 }
                 else if (counter == 1)
                 {
-                    item.UtilityType = Utility.Mall;
+                    item.UtilityType = Utility.WindTurbine;
                 }
                 else if (counter == 2 )
                 {
@@ -122,7 +123,7 @@ namespace DotNet.AI
                 counter++;
                 if (counter == 3) 
                 {
-                    counter = 0;
+                    counter = 1;
                 }
             }
 
@@ -347,6 +348,10 @@ namespace DotNet.AI
             //Get the biggest urgencyValue. That being the most urgent task 
             int maxValue = 0;
             GameTask taskToPerform = GameTask.Build;
+            if (ResidencePositions.Count == 0)
+            {
+                taskToPerform = GameTask.Wait;
+            }
             foreach (UrgencyValue item in urgencyValues)
             {
                 if (item.Value > maxValue)
